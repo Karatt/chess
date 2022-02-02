@@ -2,6 +2,7 @@
 
 class Desk {
     private $figures = [];
+    private $process = null;
 
     public function __construct() {
         $this->figures['a'][1] = new Rook(false);
@@ -51,6 +52,22 @@ class Desk {
         $xTo   = $match[3];
         $yTo   = $match[4];
 
+        // Если цвет фигуры на предыдущем ходе совпадает с текущим
+        if ($this->process !== null && $this->process == $this->figures[$xFrom][$yFrom]->isBlack) {
+            throw new \Exception("Incorrect move");
+        }
+        print_r([$this->figures, $this->figures[$xFrom][$yFrom+1], $this->figures[$xFrom][$yFrom-1], $xFrom.$yFrom+1 .'-'.$xFrom.$yFrom-1]);
+        if (
+            get_class($this->figures[$xFrom][$yFrom]) === 'Pawn' // Если пешка
+            && !(($yFrom == 2 && in_array($yTo, [3, 4])) || ($yFrom == 7 && in_array($yTo, [6, 5]))) // Если в начале
+            && !($xFrom == $xTo && ($yFrom+1 == $yTo || $yFrom-1 == $yTo)) // Ходим по вертикали на одну клетку
+            && ($xFrom == $xTo && (isset($this->figures[$xTo][$yFrom+1]) || isset($this->figures[$xTo][$yTo-1])))
+            ) {
+            echo "<pre>";print_r([$xFrom.$yFrom .'-'.$xTo.$yTo ]);echo "</pre>";
+            throw new \Exception("Incorrect move");
+        }
+
+        $this->process = $this->figures[$xFrom][$yFrom]->isBlack;
         if (isset($this->figures[$xFrom][$yFrom])) {
             $this->figures[$xTo][$yTo] = $this->figures[$xFrom][$yFrom];
         }
